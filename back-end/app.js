@@ -1,15 +1,26 @@
+// == Imports
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const path = require('path');
-console.log(process.env);
 
 const userRoutes = require('./routes/user');
 const sauceRoutes = require('./routes/sauce');
 
-mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology:true })
-    .then(() => console.log('Connection to MongoDB has succeded!'))
-    .catch(() => console.log('Connection to MongoDB has failed!'));
+// =============================
+const connectDB = async () => {
+    try {
+        await mongoose.connect(process.env.MONGO_URI, { 
+            useNewUrlParser: true, 
+            useUnifiedTopology:true 
+        });
+        console.info(`Connection to MongoDB has succeded!`);
+    }
+    catch (error) {
+        console.error(`Connection to MongoDB has failed!: ${error}`)
+    }
+}
+connectDB();
 
 const app = express();
 
