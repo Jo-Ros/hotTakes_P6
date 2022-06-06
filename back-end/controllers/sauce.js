@@ -1,14 +1,17 @@
 const Sauce = require('../models/sauce');
 const fs = require('fs');
 
+// == Find better way to deal with errors (!"") ==
 // ==============
 exports.getAllSauces = async (req, res, next) => {
         try {
             const sauces = await Sauce.find();
+            if(!sauces) return res.status(400).json({ error: 'Can Not Find Sauces!' });
             res.status(201).json(sauces);   
         } 
         catch (err) {
-            console.log('Error has occured' + err);
+            console.error(`Error has occured: ${err}`);
+            res.status(500).json({ message: `Error has occured: ${err}` })
         }
 };
 
@@ -32,7 +35,8 @@ exports.createSauce = async (req, res, next) => {
         res.status(201).json(({ message: 'Sauce loaded' }));
     }
     catch (err) {
-        console.log('Error has occured' + err);
+        console.error(`Error has occured: ${err}`);
+        res.status(500).json({ message: `Error has occured: ${err}` })
     }
 };
 
@@ -44,8 +48,9 @@ exports.getOneSauce = async (req, res, next) => {
         if(!singleSauce) return res.status(404).json({ error: 'No such sauce' });
         res.status(200).json(singleSauce);
     }
-    catch(err) {
-        console.log('Error has occured' + err);
+    catch (err) {
+        console.error(`Error has occured: ${err}`);
+        res.status(500).json({ message: `Error has occured: ${err}` })
     }
 };
 
@@ -79,8 +84,9 @@ exports.modifySauce = async (req, res, next) => {
         res.status(200).json({ message: "Modified Sauce!" });
     }
 
-    catch(err) {
-        console.log('Error has occured' + err);
+    catch (err) {
+        console.error(`Error has occured: ${err}`);
+        res.status(500).json({ message: `Error has occured: ${err}` })
     }
 };
 
@@ -93,18 +99,19 @@ exports.deleteSauce = async (req, res, next) => {
         fs.unlink(`images/${filename}`, async () => {
             const sauce = await Sauce.findOne({ _id: req.params.id })
             if(!sauce) {
-                return res.status(404).json({ error: new Error('No such sauce:')})
+                return res.status(404).json({ error: new Error('No such sauce')})
             }
             if(sauce.userId !== req.auth.userId) {
                 return res.status(403).json({ error: new Error('Unauthorized request!')})
             }
     
             const dsauce = await Sauce.deleteOne({ _id: req.params.id })
-                res.status(200).json({ message: 'Sauce had been deleted!'});
+                res.status(200).json({ message: 'Sauce has been deleted!'});
         })
     }
-    catch(err) {
-        console.log('Error has occured' + err);
+    catch (err) {
+        console.error(`Error has occured: ${err}`);
+        res.status(500).json({ message: `Error has occured: ${err}` })
     }
 }
 
@@ -147,7 +154,8 @@ exports.likeDislikeSauce = async (req, res, next) => {
             }
         }
     }
-    catch(err) {
-        console.log('Error has occured' + err);
+    catch (err) {
+        console.error(`Error has occured: ${err}`);
+        res.status(500).json({ message: `Error has occured: ${err}` })
     }
 }

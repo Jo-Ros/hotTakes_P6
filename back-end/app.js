@@ -1,11 +1,13 @@
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const path = require('path');
+console.log(process.env);
 
 const userRoutes = require('./routes/user');
 const sauceRoutes = require('./routes/sauce');
 
-mongoose.connect('mongodb+srv://jeanrene:jonasmsn@cluster0.l9lc9.mongodb.net/myFirstDatabase?retryWrites=true&w=majority', { useNewUrlParser: true, useUnifiedTopology:true })
+mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology:true })
     .then(() => console.log('Connection to MongoDB has succeded!'))
     .catch(() => console.log('Connection to MongoDB has failed!'));
 
