@@ -1,17 +1,17 @@
 const Sauce = require('../models/sauce');
+const User = require('../models/User');
 const fs = require('fs');
 
-// == Find better way to deal with errors (!"") ==
 // ==============
 exports.getAllSauces = async (req, res, next) => {
         try {
             const sauces = await Sauce.find();
             if(!sauces) return res.status(400).json({ error: 'Can Not Find Sauces!' });
-            res.status(201).json(sauces);   
+            res.status(200).json(sauces);
         } 
         catch (err) {
             console.error(`Error has occured: ${err}`);
-            res.status(500).json({ message: `Error has occured: ${err}` })
+            res.status(500).json({ message: `Error has occured: ${err}` });
         }
 };
 
@@ -78,9 +78,9 @@ exports.modifySauce = async (req, res, next) => {
             sauceObject = { ...req.body };
         }
     
-        const updatedSauce = await Sauce.updateOne(
+        await Sauce.updateOne(
             { _id: req.params.id },
-            { ...sauceObject, _id: req.params.id })
+            { ...sauceObject, _id: req.params.id });
         res.status(200).json({ message: "Modified Sauce!" });
     }
 
@@ -105,8 +105,8 @@ exports.deleteSauce = async (req, res, next) => {
                 return res.status(403).json({ error: new Error('Unauthorized request!')})
             }
     
-            const dsauce = await Sauce.deleteOne({ _id: req.params.id })
-                res.status(200).json({ message: 'Sauce has been deleted!'});
+            await Sauce.deleteOne({ _id: req.params.id });
+            res.status(200).json({ message: 'Sauce has been deleted!'});
         })
     }
     catch (err) {
@@ -118,18 +118,20 @@ exports.deleteSauce = async (req, res, next) => {
 // ==============
 exports.likeDislikeSauce = async (req, res, next) => {
     try {
+        const currentUser = await User.findOne({ _id: req.body.userId });
+
         if (req.body.like === 1) {
             await Sauce.updateOne(
                 { _id: req.params.id },
-                { $inc: { likes: req.body.like++ }, $push: { usersLiked: req.body.userId } }
+                { $inc: { likes: +1 }, $push: { usersLiked: currentUser._id } }
             );
             res.status(200).json({ message: "Like Added" });
         }
     
         else if (req.body.like === -1) {
-            const sauce = await Sauce.updateOne(
+            await Sauce.updateOne(
                 { _id: req.params.id },
-                { $inc: { dislikes: req.body.like++ * -1 }, $push: { usersDisliked: req.body.userId } }
+                { $inc: { dislikes: +1 }, $push: { usersDisliked: currentUser._id } }
             );
             res.status(200).json({ message: "Dislike Added" });
         } 
@@ -138,17 +140,17 @@ exports.likeDislikeSauce = async (req, res, next) => {
             const sauce = await Sauce.findOne({ _id: req.params.id });
     
             if (sauce.usersLiked.includes(req.body.userId)) {
-                const sauce = await Sauce.updateOne(
+                await Sauce.updateOne(
                     { _id: req.params.id },
-                    { $inc: { likes: -1 }, $pull: { usersLiked: req.body.userId } }
+                    { $inc: { likes: -1 }, $pull: { usersLiked: currentUser._id } }
                 );
                 res.status(200).json({ message: "Like Deleted" });
             }
     
-            else if (sauce.usersDisliked.includes(req.body.userId)) {
-                const sauce = await Sauce.updateOne(
+            else if (sauce.usersDisliked.includes(currentUser._id)) {
+                await Sauce.updateOne(
                     { _id: req.params.id },
-                    { $inc: { dislikes: -1 }, $pull: { usersDisliked: req.body.userId } }
+                    { $inc: { dislikes: -1 }, $pull: { usersDisliked: currentUser._id } }
                 );
                 res.status(200).json({ message: "Dislike Deleted" });
             }

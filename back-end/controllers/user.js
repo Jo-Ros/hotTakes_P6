@@ -16,7 +16,7 @@ exports.signup = async (req, res, next) => {
     }
     catch (error) {
         console.error(`Error has occured: ${error}`);
-        res.status(500).json({ message: `Error has occured: ${error}` })
+        res.status(500).json({ message: `Error has occured: ${error}` });
     }
 };
 
